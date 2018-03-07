@@ -149,7 +149,9 @@ public abstract class Server {
 
 						try {
 							onLog("[Server] Waiting for connection" + (secureMode ? " using SSL..." : "..."));
-							final Socket tempSocket = server.accept();
+							@SuppressWarnings("resource")
+							final Socket tempSocket = server.accept();//Potential resource leak: 'tempSocket' may not be closed
+
 
 							ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(tempSocket.getInputStream()));
 							Object raw = ois.readObject();
@@ -162,6 +164,7 @@ public abstract class Server {
 									if (msg.id().equalsIgnoreCase(current)) {
 										onLog("[Server] Executing method for identifier '" + msg.id() + "'");
 										new Thread(new Runnable() {
+											@Override
 											public void run() {
 												// Run the method registered for the ID of this Datapackage
 												idMethods.get(current).run(msg, tempSocket);
@@ -381,9 +384,8 @@ public abstract class Server {
 			throw new IllegalArgumentException("Identifier may not be '" + INTERNAL_LOGIN_ID + "'. "
 					+ "Since v1.0.1 the server automatically registers new clients. "
 					+ "To react on new client registed, use the onClientRegisters() Listener by overwriting it.");
-		} else {
-			idMethods.put(identifier, executable);
 		}
+		idMethods.put(identifier, executable);
 	}
 
 	/**

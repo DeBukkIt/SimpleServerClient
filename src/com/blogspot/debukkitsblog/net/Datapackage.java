@@ -1,6 +1,5 @@
 package com.blogspot.debukkitsblog.net;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
@@ -10,7 +9,7 @@ import java.util.ArrayList;
  * @author Leonard Bienbeck
  * @version 2.4.0
  */
-public class Datapackage extends ArrayList<Object> implements Serializable {
+public class Datapackage extends ArrayList<Object> {
 
 	/**
 	 * 

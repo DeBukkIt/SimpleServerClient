@@ -290,6 +290,7 @@ public class Client {
 								if (msg.id().equalsIgnoreCase(current)) {
 									onLog("[Client] Message received. Executing method for '" + msg.id() + "'...");
 									new Thread(new Runnable() {
+										@Override
 										public void run() {
 											idMethods.get(current).run(msg, loginSocket);
 										}
