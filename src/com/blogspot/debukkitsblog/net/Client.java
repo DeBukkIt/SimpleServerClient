@@ -51,7 +51,9 @@ public class Client {
 	}
 
 	/**
-	 * Constructs a simple client with a hostname and port to connect to and an id the server uses to identify this client in the future (e.g. for sending messages only this client should receive)
+	 * Constructs a simple client with a hostname and port to connect to and an id 
+	 * the server uses to identify this client in the future (e.g. for sending 
+	 * messages only this client should receive)
 	 * 
 	 * @param hostname
 	 *            The hostname to connect to
@@ -65,7 +67,9 @@ public class Client {
 	}
 	
 	/**
-	 * Constructs a simple client with a hostname and port to connect to and an id the server uses to identify this client in the future (e.g. for sending messages only this client should receive)
+	 * Constructs a simple client with a hostname and port to connect to and an id 
+	 * the server uses to identify this client in the future (e.g. for sending 
+	 * messages only this client should receive)
 	 * 
 	 * @param hostname
 	 *            The hostname to connect to
@@ -79,8 +83,11 @@ public class Client {
 	}
 
 	/**
-	 * Constructs a simple client with a hostname and port to connect to, an id the server uses to identify this client in the future (e.g. for sending messages only this client should receive) and a
-	 * group name the server uses to identify this and some other clients in the future (e.g. for sending messages to the members of this group, but no other clients)
+	 * Constructs a simple client with a hostname and port to connect to, an id the 
+	 * server uses to identify this client in the future (e.g. for sending messages 
+	 * only this client should receive) and a group name the server uses to identify 
+	 * this and some other clients in the future (e.g. for sending messages to the 
+	 * members of this group, but no other clients)
 	 * 
 	 * @param hostname
 	 *            The hostname to connect to
@@ -284,7 +291,6 @@ public class Client {
 										idMethods.get(current).run(msg, loginSocket);
 									}
 								}).start();
-								break;
 							}
 						}
 					} catch (IOException | ClassNotFoundException | InterruptedException ex) {
