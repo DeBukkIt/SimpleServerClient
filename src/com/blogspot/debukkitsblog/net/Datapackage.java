@@ -41,9 +41,7 @@ public class Datapackage extends ArrayList<Object> {
 	 * @return The ID of the package
 	 */
 	public String id() {
-		if (!(this.get(0) instanceof String)) {
-			throw new IllegalArgumentException("Identifier of Datapackage is not a String");
-		}
+		if (!(this.get(0) instanceof String)) throw new IllegalArgumentException("Identifier of Datapackage is not a String");
 		return (String) this.get(0);
 	}
 
