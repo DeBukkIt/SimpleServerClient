@@ -1,6 +1,5 @@
 package com.blogspot.debukkitsblog.net;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
@@ -10,7 +9,7 @@ import java.util.ArrayList;
  * @author Leonard Bienbeck
  * @version 2.4.0
  */
-public class Datapackage extends ArrayList<Object> implements Serializable {
+public class Datapackage extends ArrayList<Object> {
 
 	/**
 	 * 
@@ -42,9 +41,7 @@ public class Datapackage extends ArrayList<Object> implements Serializable {
 	 * @return The ID of the package
 	 */
 	public String id() {
-		if (!(this.get(0) instanceof String)) {
-			throw new IllegalArgumentException("Identifier of Datapackage is not a String");
-		}
+		if (!(this.get(0) instanceof String)) throw new IllegalArgumentException("Identifier of Datapackage is not a String");
 		return (String) this.get(0);
 	}
 

@@ -51,8 +51,8 @@ public class Client {
 	}
 
 	/**
-	 * Constructs a simple client with a hostname and port to connect to and an id
-	 * the server uses to identify this client in the future (e.g. for sending
+	 * Constructs a simple client with a hostname and port to connect to and an id 
+	 * the server uses to identify this client in the future (e.g. for sending 
 	 * messages only this client should receive)
 	 * 
 	 * @param hostname
@@ -65,12 +65,28 @@ public class Client {
 	public Client(String hostname, int port, String id) {
 		this(hostname, port, 10000, false, false, id, "_DEFAULT_GROUP_");
 	}
+	
+	/**
+	 * Constructs a simple client with a hostname and port to connect to and an id 
+	 * the server uses to identify this client in the future (e.g. for sending 
+	 * messages only this client should receive)
+	 * 
+	 * @param hostname
+	 *            The hostname to connect to
+	 * @param port
+	 *            The port to connect to
+	 * @param timeout
+	 *            The timeout after a connection attempt will be given up
+	 */
+	public Client(String hostname, int port, int timeout) {
+		this(hostname, port, timeout, false, false, UUID.randomUUID().toString(), "_DEFAULT_GROUP_");
+	}
 
 	/**
-	 * Constructs a simple client with a hostname and port to connect to, an id the
-	 * server uses to identify this client in the future (e.g. for sending messages
-	 * only this client should receive) and a group name the server uses to identify
-	 * this and some other clients in the future (e.g. for sending messages to the
+	 * Constructs a simple client with a hostname and port to connect to, an id the 
+	 * server uses to identify this client in the future (e.g. for sending messages 
+	 * only this client should receive) and a group name the server uses to identify 
+	 * this and some other clients in the future (e.g. for sending messages to the 
 	 * members of this group, but no other clients)
 	 * 
 	 * @param hostname
@@ -80,8 +96,7 @@ public class Client {
 	 * @param id
 	 *            The id the server may use to identify this client
 	 * @param group
-	 *            The group name the server may use to identify this and similar
-	 *            clients
+	 *            The group name the server may use to identify this and similar clients
 	 */
 	public Client(String hostname, int port, String id, String group) {
 		this(hostname, port, 10000, false, false, id, group);
@@ -97,15 +112,13 @@ public class Client {
 	 * @param timeout
 	 *            The timeout after a connection attempt will be given up
 	 * @param autoKill
-	 *            Whether the program should exit after 30 failed connection
-	 *            attempts
+	 *            Whether the program should exit after 30 failed connection attempts
 	 * @param useSSL
 	 *            Whether a secure SSL connection should be used
 	 * @param id
 	 *            The id the server may use to identify this client
 	 * @param group
-	 *            The group name the server may use to identify this and similar
-	 *            clients
+	 *            The group name the server may use to identify this and similar clients
 	 */
 	public Client(String hostname, int port, int timeout, boolean autoKill, boolean useSSL, String id, String group) {
 		this.id = id;
@@ -123,21 +136,17 @@ public class Client {
 	}
 
 	/**
-	 * Checks whether the client is connected to the server and waiting for incoming
-	 * messages.
+	 * Checks whether the client is connected to the server and waiting for incoming messages.
 	 * 
-	 * @return true, if the client is connected to the server and waiting for
-	 *         incoming messages
+	 * @return true, if the client is connected to the server and waiting for incoming messages
 	 */
 	public boolean isListening() {
 		return isConnected() && listeningThread != null && listeningThread.isAlive() && errorCount == 0;
 	}
 
 	/**
-	 * Checks whether the persistent connection to the server listening for incoming
-	 * messages is connected. This does not check whether the client actually waits
-	 * for incoming messages with the help of the <i>listening thread</i>, but only
-	 * the pure connection to the server.
+	 * Checks whether the persistent connection to the server listening for incoming messages is connected. This does not check whether the client actually waits for incoming messages with the help of
+	 * the <i>listening thread</i>, but only the pure connection to the server.
 	 * 
 	 * @return true, if connected
 	 */
@@ -148,8 +157,7 @@ public class Client {
 	/**
 	 * Checks the connectivity to the server
 	 * 
-	 * @return true, if the server can be reached at all using the given address
-	 *         data
+	 * @return true, if the server can be reached at all using the given address data
 	 */
 	public boolean isServerReachable() {
 		try {
@@ -164,10 +172,8 @@ public class Client {
 	}
 
 	/**
-	 * Mutes the console output of this instance, stack traces will still be
-	 * printed.<br>
-	 * <b>Be careful:</b> This will not prevent processing of messages passed to the
-	 * onLog and onLogError methods, if they were overwritten.
+	 * Mutes the console output of this instance, stack traces will still be printed.<br>
+	 * <b>Be careful:</b> This will not prevent processing of messages passed to the onLog and onLogError methods, if they were overwritten.
 	 * 
 	 * @param muted
 	 *            true if there should be no console output
@@ -177,9 +183,7 @@ public class Client {
 	}
 
 	/**
-	 * Starts the client. This will cause a connection attempt, a login on the
-	 * server and the start of a new listening thread (both to receive messages and
-	 * broadcasts from the server)
+	 * Starts the client. This will cause a connection attempt, a login on the server and the start of a new listening thread (both to receive messages and broadcasts from the server)
 	 */
 	public void start() {
 		login();
@@ -204,20 +208,17 @@ public class Client {
 	}
 
 	/**
-	 * Logs in to the server to receive messages and broadcasts from the server
-	 * later
+	 * Logs in to the server to receive messages and broadcasts from the server later
 	 */
 	protected void login() {
 		// Verbindung herstellen
 		try {
 			onLog("[Client] Connecting" + (secureMode ? " using SSL..." : "..."));
-			if (loginSocket != null && loginSocket.isConnected()) {
+			if (loginSocket != null && loginSocket.isConnected())
 				throw new AlreadyConnectedException();
-			}
 
 			if (secureMode) {
-				loginSocket = ((SSLSocketFactory) SSLSocketFactory.getDefault()).createSocket(address.getAddress(),
-						address.getPort());
+				loginSocket = ((SSLSocketFactory) SSLSocketFactory.getDefault()).createSocket(address.getAddress(), address.getPort());
 			} else {
 				loginSocket = new Socket();
 				loginSocket.connect(this.address, this.timeout);
@@ -245,21 +246,18 @@ public class Client {
 	}
 
 	/**
-	 * Starts a new thread listening for messages from the server. A message will
-	 * only be processed if a handler for its identifier has been registered before
-	 * using <code>registerMethod(String identifier, Executable executable)</code>
+	 * Starts a new thread listening for messages from the server. A message will only be processed if a handler for its identifier has been registered before using
+	 * <code>registerMethod(String identifier, Executable executable)</code>
 	 */
 	protected void startListening() {
 
 		// Wenn der ListeningThread lebt, nicht neu starten!
-		if (listeningThread != null && listeningThread.isAlive()) {
-			return;
-		}
+		if (listeningThread != null && listeningThread.isAlive()) return;
 
 		listeningThread = new Thread(new Runnable() {
+
 			@Override
 			public void run() {
-
 				// Staendig wiederholen
 				while (true) {
 					try {
@@ -267,9 +265,7 @@ public class Client {
 						if (loginSocket != null && !loginSocket.isConnected()) {
 							while (!loginSocket.isConnected()) {
 								repairConnection();
-								if (loginSocket.isConnected()) {
-									break;
-								}
+								if (loginSocket.isConnected()) break;
 
 								Thread.sleep(5000);
 								repairConnection();
@@ -287,20 +283,17 @@ public class Client {
 							final Datapackage msg = (Datapackage) raw;
 
 							for (final String current : idMethods.keySet()) {
-								if (msg.id().equalsIgnoreCase(current)) {
-									onLog("[Client] Message received. Executing method for '" + msg.id() + "'...");
-									new Thread(new Runnable() {
-										public void run() {
-											idMethods.get(current).run(msg, loginSocket);
-										}
-									}).start();
-									break;
-								}
+								if (!msg.id().equalsIgnoreCase(current)) continue;
+								onLog("[Client] Message received. Executing method for '" + msg.id() + "'...");
+								new Thread(new Runnable() {
+									@Override
+									public void run() {
+										idMethods.get(current).run(msg, loginSocket);
+									}
+								}).start();
 							}
-
 						}
-
-					} catch (Exception ex) {
+					} catch (IOException | ClassNotFoundException | InterruptedException ex) {
 						ex.printStackTrace();
 						onConnectionProblem();
 						onLogError("Server offline?");
@@ -311,36 +304,29 @@ public class Client {
 							repairConnection();
 						}
 					}
-
 					// Bis hieher fehlerfrei? Dann errorCount auf Null setzen:
 					errorCount = 0;
-
 				} // while true
-
 			}// run
 		});
-
 		// Thread starten
 		listeningThread.start();
 	}
 
 	/**
-	 * Sends a message to the server using a brand new socket and returns the
-	 * server's response
+	 * Sends a message to the server using a brand new socket and returns the server's response
 	 * 
 	 * @param message
 	 *            The message to send to the server
 	 * @param timeout
 	 *            The timeout after a connection attempt will be given up
-	 * @return The server's response. The identifier of this Datapackage should be
-	 *         "REPLY" by default, the rest is custom data.
+	 * @return The server's response. The identifier of this Datapackage should be "REPLY" by default, the rest is custom data.
 	 */
 	public Datapackage sendMessage(Datapackage message, int timeout) {
 		try {
 			Socket tempSocket;
 			if (secureMode) {
-				tempSocket = ((SSLSocketFactory) SSLSocketFactory.getDefault()).createSocket(address.getAddress(),
-						address.getPort());
+				tempSocket = ((SSLSocketFactory) SSLSocketFactory.getDefault()).createSocket(address.getAddress(), address.getPort());
 			} else {
 				tempSocket = new Socket();
 				tempSocket.connect(address, timeout);
@@ -358,90 +344,76 @@ public class Client {
 			tempOIS.close();
 			tempSocket.close();
 
-			if (raw instanceof Datapackage) {
+			if (raw instanceof Datapackage)
 				return (Datapackage) raw;
-			}
-		} catch (Exception ex) {
+
+		} catch (IOException | ClassNotFoundException ex) {
 			onLogError("[Client] Error while sending message:");
 			ex.printStackTrace();
 		}
-
 		return null;
 	}
 
 	/**
-	 * Sends a message to the server using a brand new socket and returns the
-	 * server's response
+	 * Sends a message to the server using a brand new socket and returns the server's response
 	 * 
 	 * @param ID
-	 *            The ID of the message, allowing the server to decide what to do
-	 *            with its content
+	 *            The ID of the message, allowing the server to decide what to do with its content
 	 * @param content
 	 *            The content of the message
-	 * @return The server's response. The identifier of this Datapackage should be
-	 *         "REPLY" by default, the rest is custom data.
+	 * @return The server's response. The identifier of this Datapackage should be "REPLY" by default, the rest is custom data.
 	 */
 	public Datapackage sendMessage(String ID, String... content) {
 		return sendMessage(new Datapackage(ID, (Object[]) content));
 	}
 
 	/**
-	 * Sends a message to the server using a brand new socket and returns the
-	 * server's response
+	 * Sends a message to the server using a brand new socket and returns the server's response
 	 * 
 	 * @param message
 	 *            The message to send to the server
-	 * @return The server's response. The identifier of this Datapackage should be
-	 *         "REPLY" by default, the rest is custom data.
+	 * @return The server's response. The identifier of this Datapackage should be "REPLY" by default, the rest is custom data.
 	 */
 	public Datapackage sendMessage(Datapackage message) {
 		return sendMessage(message, this.timeout);
 	}
 
 	/**
-	 * Registers a method that will be executed if a message containing
-	 * <i>identifier</i> is received
+	 * Registers a method that will be executed if a message containing <i>identifier</i> is received
 	 * 
 	 * @param identifier
 	 *            The ID of the message to proccess
 	 * @param executable
-	 *            The method to be called when a message with <i>identifier</i> is
-	 *            received
+	 *            The method to be called when a message with <i>identifier</i> is received
 	 */
 	public void registerMethod(String identifier, Executable executable) {
 		idMethods.put(identifier, executable);
 	}
 
 	/**
-	 * Called on the listener's main thread when there is a problem with the
-	 * connection. Overwrite this method when extending this class.
+	 * Called on the listener's main thread when there is a problem with the connection. Overwrite this method when extending this class.
 	 */
 	public void onConnectionProblem() {
 		// Overwrite this method when extending this class
 	}
 
 	/**
-	 * Called on the listener's main thread when there is no problem with the
-	 * connection and everything is fine. Overwrite this method when extending this
-	 * class.
+	 * Called on the listener's main thread when there is no problem with the connection and everything is fine. Overwrite this method when extending this class.
 	 */
 	public void onConnectionGood() {
 		// Overwrite this method when extending this class
 	}
 
 	/**
-	 * Called on the listener's main thread when the client logs in to the server.
-	 * This happens on the first and every further login (e.g. after a
-	 * re-established connection). Overwrite this method when extending this class.
+	 * Called on the listener's main thread when the client logs in to the server. This happens on the first and every further login (e.g. after a re-established connection). Overwrite this method
+	 * when extending this class.
 	 */
 	public void onReconnect() {
 		// Overwrite this method when extending this class
 	}
 
 	/**
-	 * By default, this method is called whenever an output is to be made. If this
-	 * method is not overwritten, the output is passed to the system's default
-	 * output stream (if output is not muted).<br>
+	 * By default, this method is called whenever an output is to be made. If this method is not overwritten, the output is passed to the system's default output stream (if output is not muted).<br>
 	 * Error messages are passed to the <code>onLogError</code> event listener.<br>
 	 * <b>Override this method to catch and process the message in a custom way.</b>
 	 * 
@@ -454,9 +426,8 @@ public class Client {
 	}
 
 	/**
-	 * By default, this method is called whenever an error output is to be made. If
-	 * this method is not overwritten, the output is passed to the system's default
-	 * error output stream (if output is not muted).<br>
+	 * By default, this method is called whenever an error output is to be made. If this method is not overwritten, the output is passed to the system's default error output stream (if output is not
+	 * muted).<br>
 	 * Non-error messages are passed to the <code>onLog</code> event listener.<br>
 	 * <b>Override this method to catch and process the message in a custom way.</b>
 	 * 

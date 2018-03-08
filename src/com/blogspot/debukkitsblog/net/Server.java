@@ -2,7 +2,6 @@ package com.blogspot.debukkitsblog.net;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -79,16 +78,13 @@ public abstract class Server {
 			System.setProperty("javax.net.ssl.keyStore", "ssc.store");
 			System.setProperty("javax.net.ssl.keyStorePassword", "SimpleServerClient");
 		}
-		if (autoRegisterEveryClient) {
-			registerLoginMethod();
-		}
+		if (autoRegisterEveryClient) registerLoginMethod();
+		
 		preStart();
 
 		start();
 
-		if (keepConnectionAlive) {
-			startPingThread();
-		}
+		if (keepConnectionAlive) startPingThread();
 	}
 
 	/**
@@ -143,59 +139,50 @@ public abstract class Server {
 		if (listeningThread == null && server != null) {
 			listeningThread = new Thread(new Runnable() {
 
+				@SuppressWarnings("resource")
 				@Override
 				public void run() {
 					while (server != null) {
-
+						
 						try {
 							onLog("[Server] Waiting for connection" + (secureMode ? " using SSL..." : "..."));
-							final Socket tempSocket = server.accept();
+							final Socket tempSocket = server.accept();//Potential resource leak: 'tempSocket' may not be closed
 
 							ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(tempSocket.getInputStream()));
 							Object raw = ois.readObject();
 
-							if (raw instanceof Datapackage) {
-								final Datapackage msg = (Datapackage) raw;
-								onLog("[Server] Message received: " + msg);
+							if (!(raw instanceof Datapackage)) return;
 
-								for (final String current : idMethods.keySet()) {
-									if (msg.id().equalsIgnoreCase(current)) {
-										onLog("[Server] Executing method for identifier '" + msg.id() + "'");
-										new Thread(new Runnable() {
-											public void run() {
-												// Run the method registered for the ID of this Datapackage
-												idMethods.get(current).run(msg, tempSocket);
-												// and close the temporary socket if it is not longer needed
-												if (!msg.id().equals(INTERNAL_LOGIN_ID)) {
-													try {
-														tempSocket.close();
-													} catch (Exception e) {
-														e.printStackTrace();
-													}
-												}
-											}
-										}).start();
-										break;
+							final Datapackage msg = (Datapackage) raw;
+							onLog("[Server] Message received: " + msg);
+
+							for (final String current : idMethods.keySet()) {
+								if (msg.id().equalsIgnoreCase(current)) continue;
+								
+								onLog("[Server] Executing method for identifier '" + msg.id() + "'");
+								new Thread(new Runnable() {
+
+									@Override
+									public void run() {
+										// Run the method registered for the ID of this Datapackage
+										idMethods.get(current).run(msg, tempSocket);
+										// and close the temporary socket if it is not longer needed
+										if (msg.id().equals(INTERNAL_LOGIN_ID)) return;
+										
+										try {
+											tempSocket.close();
+										} catch (IOException ex) {
+											ex.printStackTrace();
+										}
 									}
-								}
-
+								}).start();
 							}
-
-						} catch (EOFException e) {
-							e.printStackTrace();
-						} catch (IllegalBlockingModeException e) {
-							e.printStackTrace();
-						} catch (IOException e) {
-							e.printStackTrace();
-						} catch (ClassNotFoundException e) {
-							e.printStackTrace();
+						} catch (IllegalBlockingModeException | IOException | ClassNotFoundException ex) {
+							ex.printStackTrace();
 						}
-
 					}
 				}
-
 			});
-
 			listeningThread.start();
 		}
 	}
@@ -211,8 +198,22 @@ public abstract class Server {
 	 *            Datapackage will be "REPLY".
 	 */
 	public synchronized void sendReply(Socket toSocket, Object... datapackageContent) {
-		sendMessage(new RemoteClient(UUID.randomUUID().toString(), toSocket),
-				new Datapackage("REPLY", datapackageContent));
+		sendMessage(new RemoteClient(UUID.randomUUID().toString(), toSocket), new Datapackage("REPLY", datapackageContent));
+	}
+	
+	/**
+	 * Sends a reply to client. This method should only be called from within the
+	 * run-Method of an <code>Executable</code> implementation.
+	 * 
+	 * @param toSocket
+	 *            The socket the message should be delivered to
+	 * @param datapackage
+	 *            The datapackage of the message to be delivered. The ID of this
+	 *            Datapackage will be "REPLY".
+	 */
+	public synchronized void sendReply(Socket toSocket, Datapackage datapackage) {
+		datapackage.set(0, "REPLY"); //to ensure its the correct id.
+		sendMessage(new RemoteClient(UUID.randomUUID().toString(), toSocket), datapackage);
 	}
 
 	/**
@@ -239,9 +240,8 @@ public abstract class Server {
 	 */
 	public synchronized void sendMessage(String remoteClientId, Datapackage message) {
 		for (RemoteClient current : clients) {
-			if (current.getId().equals(remoteClientId)) {
-				sendMessage(current, message);
-			}
+			if(!current.getId().equals(remoteClientId)) continue;
+			sendMessage(current, message);
 		}
 	}
 
@@ -255,8 +255,7 @@ public abstract class Server {
 	 * @param datapackageContent
 	 *            The content of the message
 	 */
-	public synchronized void sendMessage(RemoteClient remoteClient, String datapackageId,
-			Object... datapackageContent) {
+	public synchronized void sendMessage(RemoteClient remoteClient, String datapackageId, Object... datapackageContent) {
 		sendMessage(remoteClient, new Datapackage(datapackageId, datapackageContent));
 	}
 
@@ -271,13 +270,12 @@ public abstract class Server {
 	public synchronized void sendMessage(RemoteClient remoteClient, Datapackage message) {
 		try {
 			// Nachricht senden
-			if (!remoteClient.getSocket().isConnected()) {
-				throw new Exception("Socket not connected.");
-			}
+			if (!remoteClient.getSocket().isConnected()) throw new IOException("Socket not connected.");
+			
 			ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(remoteClient.getSocket().getOutputStream()));
 			out.writeObject(message);
 			out.flush();
-		} catch (Exception e) {
+		} catch (IOException e) {
 			onLogError("[SendMessage] Fehler: " + e.getMessage());
 
 			// Bei Fehler: Socket aus Liste loeschen
@@ -291,6 +289,7 @@ public abstract class Server {
 	}
 
 	/**
+	 * @deprecated 
 	 * Use <code>sendMessage(RemoteClient remoteClient, Datapackage message)</code>
 	 * instead. Only the order of the parameters has changed.
 	 * 
@@ -319,10 +318,9 @@ public abstract class Server {
 		// Nachricht an alle Sockets senden
 		int rxCounter = 0;
 		for (RemoteClient current : clients) {
-			if (current.getGroup().equals(group)) {
-				sendMessage(current, message);
-				rxCounter++;
-			}
+			if(!current.getGroup().equals(group)) continue;
+			sendMessage(current, message);
+			rxCounter++;
 		}
 
 		// Alle Sockets, die fehlerhaft waren, im Anschluss loeschen
@@ -333,7 +331,6 @@ public abstract class Server {
 		}
 
 		toBeDeleted = null;
-
 		return rxCounter;
 	}
 
@@ -381,9 +378,8 @@ public abstract class Server {
 			throw new IllegalArgumentException("Identifier may not be '" + INTERNAL_LOGIN_ID + "'. "
 					+ "Since v1.0.1 the server automatically registers new clients. "
 					+ "To react on new client registed, use the onClientRegisters() Listener by overwriting it.");
-		} else {
-			idMethods.put(identifier, executable);
 		}
+		idMethods.put(identifier, executable);
 	}
 
 	/**
@@ -440,13 +436,11 @@ public abstract class Server {
 	protected void start() {
 		server = null;
 		try {
-
 			if (secureMode) {
 				server = ((SSLServerSocketFactory) SSLServerSocketFactory.getDefault()).createServerSocket(port);
 			} else {
 				server = new ServerSocket(port);
 			}
-
 		} catch (IOException e) {
 			onLogError("Error opening ServerSocket");
 			e.printStackTrace();
@@ -458,16 +452,15 @@ public abstract class Server {
 	 * Stops the server
 	 */
 	public void stop() {
-		if (listeningThread.isAlive()) {
+		if(listeningThread.isAlive()) {
 			listeningThread.interrupt();
 		}
-
-		if (server != null) {
-			try {
-				server.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		if (server == null) return;
+		
+		try {
+			server.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -509,6 +502,7 @@ public abstract class Server {
 	}
 
 	/**
+	 * @deprecated
 	 * Use <code>onClientRemoved(RemoteClient remoteClient)</code> instead. Only the
 	 * name of the method has changed.
 	 * 
@@ -544,8 +538,7 @@ public abstract class Server {
 	 *            The content of the output to be made
 	 */
 	public void onLog(String message) {
-		if (!muted)
-			System.out.println(message);
+		if (!muted) System.out.println(message);
 	}
 
 	/**
@@ -559,8 +552,7 @@ public abstract class Server {
 	 *            The content of the error output to be made
 	 */
 	public void onLogError(String message) {
-		if (!muted)
-			System.err.println(message);
+		if (!muted) System.err.println(message);
 	}
 
 	/**
