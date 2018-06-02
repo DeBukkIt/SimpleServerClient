@@ -8,6 +8,7 @@ import java.io.ObjectOutputStream;
 import java.net.ConnectException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.channels.IllegalBlockingModeException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,6 +37,7 @@ public abstract class Server {
 	protected boolean autoRegisterEveryClient;
 	protected boolean secureMode;
 
+	protected boolean stopped;
 	protected boolean muted;
 	protected long pingInterval = 30*1000; // 30 seconds
 
@@ -208,8 +210,7 @@ public abstract class Server {
 
 				@Override
 				public void run() {
-					while (server != null) {
-
+					while (!Thread.interrupted() && !stopped && server != null) {
 						
 						try {
 							// Wait for client to connect
@@ -252,6 +253,8 @@ public abstract class Server {
 
 							}
 
+						} catch (SocketException e) {
+							onLog("Server stopped.");
 						} catch (IllegalBlockingModeException | IOException | ClassNotFoundException e) {
 							e.printStackTrace();
 						}
@@ -486,6 +489,7 @@ public abstract class Server {
 	 * <code>preStart()</code> and starts the actual and the listening thread.
 	 */
 	protected void start() {
+		stopped = false;
 		server = null;
 		try {
 
@@ -504,18 +508,19 @@ public abstract class Server {
 
 	/**
 	 * Stops the server
+	 * 
+	 * @throws IOException
+	 *             If closing the ServerSocket fails
 	 */
-	public void stop() {
+	public void stop() throws IOException {
+		stopped = true;
+		
 		if (listeningThread.isAlive()) {
 			listeningThread.interrupt();
 		}
 
 		if (server != null) {
-			try {
-				server.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			server.close();
 		}
 	}
 
