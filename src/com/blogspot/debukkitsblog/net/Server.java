@@ -255,6 +255,7 @@ public abstract class Server {
 
 						} catch (SocketException e) {
 							onLog("Server stopped.");
+							onServerStopped();
 						} catch (IllegalBlockingModeException | IOException | ClassNotFoundException e) {
 							e.printStackTrace();
 						}
@@ -601,6 +602,14 @@ public abstract class Server {
 	 *            The client that was removed from the list of reachable clients
 	 */
 	public void onClientRemoved(RemoteClient remoteClient) {
+		// Overwrite this method when extending this class
+	}
+	
+	/**
+	 * Called when the server finally stops after the stop () method has been
+	 * called.
+	 */
+	public void onServerStopped() {
 		// Overwrite this method when extending this class
 	}
 
