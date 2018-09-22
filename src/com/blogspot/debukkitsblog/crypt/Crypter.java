@@ -124,7 +124,7 @@ public class Crypter {
 	 */
 	private static Key generateKey(String key) throws Exception {
 		String resultKey = key;
-		while (key.length() < 16) {
+		while (resultKey.length() < 16) {
 			resultKey += resultKey;
 		}
 		while (resultKey.length() > 16) {
