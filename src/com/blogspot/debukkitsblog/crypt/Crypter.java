@@ -127,9 +127,7 @@ public class Crypter {
 		while (resultKey.length() < 16) {
 			resultKey += resultKey;
 		}
-		while (resultKey.length() > 16) {
-			resultKey = resultKey.substring(0, resultKey.length() - 1);
-		}
+		resultKey = resultKey.substring(0, 15);
 
 		byte[] keyValue = resultKey.getBytes(Charset.forName("UTF-8"));
 		return new SecretKeySpec(keyValue, ALGO);
