@@ -124,10 +124,10 @@ public class Crypter {
 	 */
 	private static Key generateKey(String key) throws Exception {
 		String resultKey = key;
-		while (resultKey.length() < 16) {
+		while (resultKey.length() < 32) {
 			resultKey += resultKey;
 		}
-		resultKey = resultKey.substring(0, 15);
+		resultKey = resultKey.substring(0, 32);
 
 		byte[] keyValue = resultKey.getBytes(Charset.forName("UTF-8"));
 		return new SecretKeySpec(keyValue, ALGO);
