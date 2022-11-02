@@ -4,16 +4,7 @@ A very lightweight and easy-to-use library for client-server-client or simply se
 
 **Code Quality and Build Status**
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/3d5b115186f44ecab613ac3f2ca0015b)](https://www.codacy.com/app/DeBukkIt/SimpleServerClient?utm_source=github.com&utm_medium=referral&utm_content=DeBukkIt/SimpleServerClient&utm_campaign=badger)
 [![Build Status](https://travis-ci.org/DeBukkIt/SimpleServerClient.svg?branch=master)](https://travis-ci.org/DeBukkIt/SimpleServerClient)
-
-# Performance Comparison
-
-The graph shows a comparison of the latencies achieved with different versions of the SimpleServerClient. Recently, buffers were introduced for both branches (master and experimental), each generating a significant increase in performance. In addition, the version in the experimental branch does not reestablish a new connection to the server for each message from the client, but always uses the same connection where messages are exchanged in both directions. The elimination of this overhead offers another significant increase in performance. This implementation will be merged into the master branch as soon as it is ready to use and stable.
-
-![Performance Comparison of Versions and Branches](https://debukkit.github.io/images/SimpleServerClient_Performance_Comparison.jpg)
-
-The latency in the graph shows the travel time of an about 25-byte small Datapackage sent by the client through the Internet to the server and back (sum of ping and pong).
 
 # How to use THE SERVER
 ```java
